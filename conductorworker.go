@@ -14,6 +14,7 @@
 package conductor
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -55,6 +56,11 @@ func (c *ConductorWorker) Execute(t *task.Task, executeFunction func(t *task.Tas
 		log.Println("Error Executing task:", err.Error())
 		taskResult.Status = task.FAILED
 		taskResult.ReasonForIncompletion = err.Error()
+	}
+
+	if taskResult == nil {
+		log.Println(fmt.Sprintf("'taskResult' cannot be nil on task execution return. taskType=%s", t.TaskType))
+		return
 	}
 
 	taskResultJsonString, err := taskResult.ToJSONString()
