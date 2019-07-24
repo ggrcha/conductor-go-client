@@ -14,6 +14,7 @@
 package conductor
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -49,9 +50,17 @@ func NewConductorWorker(baseUrl string, threadCount int, pollingInterval int) *C
 func (c *ConductorWorker) Execute(t *task.Task, executeFunction func(t *task.Task) (*task.TaskResult, error)) {
 	taskResult, err := executeFunction(t)
 	if err != nil {
+		if taskResult == nil {
+			taskResult = task.NewTaskResult(t)
+		}
 		log.Println("Error Executing task:", err.Error())
 		taskResult.Status = task.FAILED
 		taskResult.ReasonForIncompletion = err.Error()
+	}
+
+	if taskResult == nil {
+		log.Println(fmt.Sprintf("'taskResult' cannot be nil on task execution return. taskType=%s", t.TaskType))
+		return
 	}
 
 	taskResultJsonString, err := taskResult.ToJSONString()
